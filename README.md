@@ -1,431 +1,753 @@
-# CampMart v2 - Campus Marketplace
+# CampMart V2
 
-> A comprehensive, production-ready peer-to-peer marketplace platform designed specifically for university students.
+> **Your Campus. Your Marketplace.**
 
-![Version](https://img.shields.io/badge/version-2.0-blue)
-![Database](https://img.shields.io/badge/database-MySQL%205.7%2B-orange)
-![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple)
-![Status](https://img.shields.io/badge/status-ready-green)
+CampMart V2 is a campus-focused online marketplace built for students and campus communities. It provides a web application for discovering, buying, selling, saving, messaging about, and managing products and services, together with campus/community features and a REST API.
+
+This README describes the **current repository structure and implementation**. It replaces the older README that described CampMart as an earlier static/database prototype.
 
 ---
 
-## 🚀 Quick Start
+## Overview
 
-### 1. Install Database
+CampMart V2 is a PHP/MySQL(MariaDB) application designed to run primarily on Apache/XAMPP.
 
-**Option A - Windows (Easy):**
+The current codebase is a mature, feature-rich PHP application containing:
+
+- Product marketplace
+- Student services marketplace
+- User accounts and profiles
+- University/campus scoping
+- Categories
+- Search and suggestions
+- Bookmarks
+- Cart and orders
+- Messaging/conversations
+- Notifications
+- Reviews and ratings
+- Lost & Found
+- Free-item/community listings
+- Sponsored/advertising features
+- Flash sales
+- Affiliate functionality
+- QR/QR-store functionality
+- Rider/delivery functionality
+- Admin management
+- Email verification
+- Password reset functionality
+- SEO-related settings
+- AI-powered search/recommendations/chat/lost-and-found assistance
+- A versioned REST API under `api/v1/`
+- OpenAPI documentation for the v1 API
+
+The repository also contains legacy/procedural API endpoints alongside the newer v1 API. These are both part of the current codebase and should not be assumed interchangeable.
+
+---
+
+## Technology Stack
+
+| Area | Current implementation |
+|---|---|
+| Backend | PHP |
+| Database | MySQL / MariaDB |
+| Web server | Apache |
+| Local development | XAMPP-compatible |
+| Database driver | MySQLi |
+| API | PHP REST-style API under `api/v1/` |
+| Authentication | Session-based web authentication plus JWT for API v1 |
+| Frontend | Server-rendered HTML, CSS, JavaScript |
+| UI utilities | Tailwind utility classes and existing Material Symbols usage |
+| Image/media | Existing upload/image-processing code and Cloudinary dependency |
+| AI | Mistral-based configuration in `.env.example` |
+| API documentation | OpenAPI 3.0.3 |
+| Dependency manager | Composer |
+
+The repository currently contains Composer's `vendor/` directory. Third-party source inside `vendor/` should not normally be edited manually.
+
+---
+
+## Current Architecture
+
+CampMart is not a single-framework application. It uses several established layers.
+
+### Main PHP application
+
+Important shared files include:
+
+```
+includes/
+├── constant.php
+├── controller.php
+└── function.php
+```
+
+### `includes/constant.php`
+
+Provides core database/site configuration and creates the shared MySQLi connection.
+
+The current repository configuration uses:
+
+```
+DB_SERVER = localhost
+DB_USER   = root
+DB_PASS   = ""
+DB_NAME   = campmartv2
+```
+
+**Important:** the repository currently references the database as `campmartv2`. Do not rename the database or change this configuration without also checking the SQL schema, migrations, local database, and every code reference.
+
+### `includes/function.php`
+
+Contains the shared procedural utility/database layer.
+
+Existing helpers include functions such as:
+
+- `dbInsert()`
+- `dbSelect()`
+- `dbSelectCol()`
+- `dbSelectOr()`
+- `dbUpdate()`
+- `dbDelete()`
+- `countRows()`
+- `countRowsOr()`
+- `tableRowItem()`
+- `tableRowItemOr()`
+- `sanitize()`
+- password/time and other application utilities
+
+When adding functionality, inspect this file first and reuse an existing helper when appropriate.
+
+### `includes/controller.php`
+
+Contains substantial application-level behavior including profile/user handling, listing operations, image processing, lost-and-found posting, role restrictions, and other shared application logic.
+
+Do not duplicate functionality from this file without first searching its existing functions.
+
+---
+
+## REST API v1
+
+The newer REST API lives under:
+
+```
+api/v1/
+```
+
+Its main entry point is:
+
+```
+api/v1/index.php
+```
+
+The API currently uses:
+
+- Configuration
+- CORS handling
+- Database bootstrap
+- JWT authentication
+- Authentication middleware
+- Request validation
+- Standard response helpers
+- Pagination
+- Controllers
+- OpenAPI documentation
+
+### Current controller areas
+
+The repository currently contains controllers for:
+
+- Authentication
+- Products
+- Categories
+- Users
+- Bookmarks
+- Cart
+- Orders
+- Services
+- Reviews
+- Notifications
+- Messages/chats
+- Search
+
+Representative structure:
+
+```
+api/v1/
+├── config/
+│   ├── cors.php
+│   ├── database.php
+│   └── jwt.php
+├── controllers/
+│   ├── AuthController.php
+│   ├── BookmarkController.php
+│   ├── CartController.php
+│   ├── CategoryController.php
+│   ├── MessageController.php
+│   ├── NotificationController.php
+│   ├── OrderController.php
+│   ├── ProductController.php
+│   ├── ReviewController.php
+│   ├── SearchController.php
+│   ├── ServiceController.php
+│   └── UserController.php
+├── helpers/
+│   ├── pagination.php
+│   ├── response.php
+│   └── validator.php
+├── middleware/
+│   └── AuthMiddleware.php
+├── docs/
+│   ├── index.html
+│   └── openapi.json
+└── index.php
+```
+
+### API authentication
+
+API v1 uses bearer JWT authentication.
+
+Protected routes use the existing `AuthMiddleware` implementation. Public and optional-authentication routes use the existing patterns where applicable.
+
+Do not create a second authentication mechanism for API v1 without an explicit architectural decision.
+
+### API documentation
+
+The OpenAPI specification is located at:
+
+```
+api/v1/docs/openapi.json
+```
+
+The documentation page is:
+
+```
+api/v1/docs/index.html
+```
+
+When changing an API endpoint, check whether the OpenAPI documentation also needs to be updated.
+
+---
+
+## Legacy API
+
+The repository also contains procedural endpoints directly under:
+
+```
+api/
+```
+
+Examples include endpoints for:
+
+- Login/signup
+- Cart operations
+- Orders
+- Bookmarks
+- Search suggestions/logging
+- View/ad tracking
+- QR functionality
+- AI functionality
+- Admin operations
+- Dashboard operations
+
+There is also an `api/admin/`, `api/ai/`, `api/dashboard/`, and `api/qrstore/` structure.
+
+Do not remove or migrate legacy endpoints simply because `api/v1/` exists. First inspect their callers and determine which implementation the requested feature actually uses.
+
+---
+
+## AI Features
+
+AI configuration is provided through:
+
+```
+.env.example
+```
+
+The current example configuration identifies Mistral as the AI provider and includes configuration for:
+
+- LLM requests
+- Embeddings
+- Vector/search functionality
+- Request timeout
+- AI logging
+- AI enable/disable state
+
+AI-related functionality exists under:
+
+```
+includes/ai/
+api/ai/
+ai-reindex.php
+```
+
+The codebase includes AI functionality related to areas such as:
+
+- Semantic search
+- Recommendations
+- Chatbot functionality
+- Smart replies
+- Lost-and-found matching
+- Embedding/indexing
+- Search logging/caching
+
+### AI environment configuration
+
+Copy the example configuration into your local environment/configuration as appropriate and provide your own secret values.
+
+Never commit real API keys or other secrets.
+
+---
+
+## Database
+
+The primary SQL dump currently tracked in the repository is:
+
+```
+database/campmartv2.sql
+```
+
+The dump was generated from MariaDB and is associated with the `campmartv2` database.
+
+The database directory also contains incremental feature migrations, including migrations for areas such as:
+
+- AI features
+- Email verification
+- SEO settings
+- University/listing relationships
+- University advertising relationships
+- Cart
+- Orders
+- Password resets
+- Featured subscriptions
+- Payments
+- Riders
+- Campus submissions
+- Guide videos
+
+### Important database rule
+
+The SQL dump and migrations represent the database side of the application. Before changing a database-dependent feature:
+
+1. Inspect the relevant table in `database/campmartv2.sql`.
+2. Check related migration files.
+3. Search the entire repository for the table/column.
+4. Check PHP queries and API controllers.
+5. Check frontend consumers.
+6. Make the smallest compatible change.
+
+Do not assume that a column exists merely because its name seems logical.
+
+---
+
+## Local Development with XAMPP
+
+The application is structured to work in an Apache/XAMPP environment.
+
+A typical local setup is:
+
+```
+C:\xampp\htdocs\campmart
+```
+
+or another Apache document-root location.
+
+### Basic setup
+
+1. Install/start XAMPP.
+2. Start **Apache**.
+3. Start **MySQL**.
+4. Clone/copy the repository into the Apache document root.
+5. Create/import the `campmartv2` database.
+6. Import `database/campmartv2.sql` or apply the required migrations.
+7. Check `includes/constant.php` and make sure its database settings match the local database.
+8. Install Composer dependencies if the environment does not already contain `vendor/`.
+9. Open the application through Apache.
+
+Example local URL:
+
+```
+http://localhost/campmart/
+```
+
+The exact URL depends on the folder name used in your XAMPP `htdocs` directory.
+
+### Composer
+
+The repository currently declares Cloudinary in `composer.json`.
+
+If dependencies need to be installed:
+
 ```bash
-# Double-click the installation file
-install-database.bat
+composer install
 ```
 
-**Option B - Command Line:**
-```bash
-# Make sure MySQL is running
-mysql -u root -p < database/install.sql
-```
-
-**Option C - phpMyAdmin:**
-1. Open http://localhost/phpmyadmin
-2. Import `database/campmartv2_structure.sql`
-3. Import `database/campmartv2_seed_data.sql`
-
-### 2. Test Installation
-Visit: http://localhost/campmartv2/test-database.php
-
-### 3. View Your Site
-Visit: http://localhost/campmartv2/
+Do not edit third-party packages directly inside `vendor/`.
 
 ---
 
-## 📁 Project Structure
+## Main Feature Areas
+
+The current repository contains implementation for a broad set of marketplace/community functionality.
+
+### Marketplace
+
+- Product listings
+- Product categories
+- Product images
+- Product detail pages
+- Seller/store pages
+- Product views
+- Bookmarks
+- Search
+- Cart
+- Checkout/order flows
+- Reviews
+- Flash sales
+- Sponsored content
+
+### Services
+
+- Service listings
+- Service categories
+- Provider profiles
+- Service pricing
+- Portfolio/media
+- Reviews and ratings
+- Service management
+
+### Users
+
+- Registration
+- Login/logout
+- Profiles
+- Profile images
+- University information
+- Account status
+- Email verification
+- Password reset
+- Role-based access
+
+### Community
+
+- Lost & Found
+- Free/community listings
+- Campus/university-specific content
+- User messaging
+- Notifications
+- Search history/logging
+
+### Business/monetization features
+
+The repository contains implementation for areas including:
+
+- Sponsored content
+- Featured subscriptions
+- Affiliate functionality
+- Payments
+- Flash sales
+- Rider/delivery functionality
+
+### Admin
+
+The repository includes admin-facing pages and endpoints for areas such as:
+
+- Users
+- Products
+- Services
+- Transactions
+- Ads
+- Lost & Found
+- Videos
+- Categories
+- Plans/subscriptions
+- Analytics/management functionality
+
+---
+
+## Important Directories
+
+A simplified view of the current project:
 
 ```
-campmartv2/
+CampMart V2
 │
-├── 📄 index.php                    # Main homepage
-├── 🧪 test-database.php            # Database test page
-├── 🔧 install-database.bat         # Windows installer
+├── .github/
+│   └── copilot-instructions.md
 │
-├── 📂 includes/
-│   ├── constant.php                # Database config ✓
-│   ├── controller.php              # Controllers
-│   └── function.php                # Helper functions
+├── api/
+│   ├── admin/
+│   ├── ai/
+│   ├── dashboard/
+│   ├── qrstore/
+│   └── v1/
 │
-├── 📂 database/
-│   ├── campmartv2_structure.sql    # Database schema ✓
-│   ├── campmartv2_seed_data.sql    # Sample data ✓
-│   ├── install.sql                 # Combined installer ✓
-│   ├── query_examples.sql          # 100+ SQL queries ✓
-│   └── README.md                   # Full documentation ✓
+├── database/
+│   ├── campmartv2.sql
+│   └── feature migrations
 │
-├── 📖 IMPLEMENTATION_GUIDE.md       # Step-by-step guide ✓
-├── 📊 DATABASE_SUMMARY.md           # Quick overview ✓
-└── 📝 README.md                     # This file
+├── includes/
+│   ├── ai/
+│   ├── constant.php
+│   ├── controller.php
+│   └── function.php
+│
+├── vendor/
+│   └── Composer dependencies
+│
+├── admin*.php
+├── rider/
+├── *.php application pages
+├── .env.example
+├── .htaccess
+├── composer.json
+└── README.md
+```
+
+This is intentionally a simplified map. The repository contains many additional feature-specific files.
+
+---
+
+## Configuration and Secrets
+
+The repository includes:
+
+```
+.env.example
+```
+
+This file documents AI-related environment settings.
+
+Do not place real API keys, passwords, database credentials, JWT secrets, payment credentials, or other private secrets into Git.
+
+Before deploying publicly:
+
+- Use production secrets outside source control.
+- Review database credentials.
+- Review API authentication secrets.
+- Review upload permissions.
+- Enable HTTPS.
+- Review error reporting.
+- Restrict sensitive admin functionality.
+- Verify CORS and API configuration.
+
+---
+
+## Development Rules
+
+CampMart V2 is a mature codebase. New changes should follow the existing architecture.
+
+### Before changing code
+
+**Inspect → Search → Trace → Plan → Modify → Re-scan → Validate**
+
+Always:
+
+- Search for existing implementations.
+- Reuse existing helpers.
+- Inspect database references.
+- Inspect API callers.
+- Inspect frontend consumers.
+- Check shared functions before changing them.
+- Avoid creating duplicate functionality.
+
+### Keep changes focused
+
+Do not:
+
+- Refactor unrelated code.
+- Rename unrelated files.
+- Replace the architecture without a specific reason.
+- Add a framework just for one feature.
+- Remove legacy functionality without tracing its usage.
+- Modify vendor code unnecessarily.
+- Change database tables without checking all references.
+
+The project-specific Copilot rules are maintained in:
+
+```
+.github/copilot-instructions.md
 ```
 
 ---
 
-## ✨ Features
+## Security Notes
 
-### Core Marketplace
-- ✅ Product listings with images and categories
-- ✅ Advanced search with filters
-- ✅ User ratings and reviews
-- ✅ Bookmarks/Favorites
-- ✅ Real-time messaging
-- ✅ Transaction management
-- ✅ Multiple payment methods
+The application contains authentication, authorization, user data, database operations, uploads, API endpoints, and payment-related functionality.
 
-### Student Services
-- ✅ Service marketplace (tutoring, design, repairs)
-- ✅ Hourly and project-based pricing
-- ✅ Portfolio showcase
-- ✅ Service bookings
+When developing:
 
-### Community Features
-- ✅ Lost & Found system
-- ✅ Free items/Donations
-- ✅ Campus-specific listings
-- ✅ University verification
+- Use prepared statements where the surrounding implementation supports them.
+- Validate user input.
+- Preserve authentication and authorization checks.
+- Protect file uploads.
+- Never commit secrets.
+- Do not expose private configuration.
+- Check permissions before changing admin/rider functionality.
+- Preserve existing CSRF/security mechanisms.
+- Review database and API changes for unintended access.
 
-### Admin Panel
-- ✅ User management
-- ✅ Content moderation
-- ✅ Report handling
-- ✅ Analytics dashboard
-- ✅ Sponsored content management
-
-### Security & Performance
-- ✅ Prepared statements ready
-- ✅ Input validation structure
-- ✅ Password hashing support
-- ✅ Role-based access control
-- ✅ Optimized indexes
-- ✅ Full-text search
+Security-related changes should be tested against both authenticated and unauthenticated behavior where applicable.
 
 ---
 
-## 📊 Database Overview
+## API Endpoint Summary
 
-### 21 Production-Ready Tables
+The v1 API currently exposes resource areas including:
 
-**Core Tables:**
-- `universities` - Campus information
-- `user_roles` - Permission system
-- `users` - User accounts
-- `categories` - Product categories
-
-**Marketplace:**
-- `products` - Product listings
-- `product_images` - Product photos
-- `services` - Student services
-- `service_categories` - Service types
-
-**Interactions:**
-- `transactions` - Orders/purchases
-- `conversations` - Chat threads
-- `messages` - Chat messages
-- `bookmarks` - Saved items
-- `reviews` - Ratings & feedback
-- `notifications` - User alerts
-
-**Special Features:**
-- `lost_found_items` - Lost & found
-- `sponsored_content` - Ads/promotions
-
-**Admin & Analytics:**
-- `reports` - User reports
-- `activity_logs` - Audit trail
-- `system_settings` - Configuration
-- `product_views` - View tracking
-- `search_history` - Search analytics
-
-### Sample Data Included
-
-- **16 users** (admin + test accounts)
-- **12 products** (matching your page)
-- **3 services** (Design, Tutoring, Repairs)
-- **3 lost & found items**
-- **2 free items**
-- **6 sponsored ads**
-- Complete with reviews, bookmarks, and transactions!
-
----
-
-## 🔐 Default Credentials
-
-**Admin Account:**
-- Username: `admin`
-- Email: `admin@campmart.ng`
-- Password: `password` ⚠️ *Change immediately!*
-
-**Test Accounts:**
-- `alexjohnson` / `password`
-- `techtrade` / `password`
-- `campuskicks` / `password`
-
----
-
-## 📚 Documentation
-
-| File | Description |
-|------|-------------|
-| **DATABASE_SUMMARY.md** | 📊 Quick overview and setup guide |
-| **IMPLEMENTATION_GUIDE.md** | 🚀 Step-by-step dynamic conversion |
-| **database/README.md** | 📖 Complete database documentation |
-| **database/query_examples.sql** | 💻 100+ ready-to-use SQL queries |
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend**: PHP 7.4+
-- **Database**: MySQL 5.7+ / MariaDB 10.2+
-- **Frontend**: HTML5, Tailwind CSS, JavaScript
-- **Server**: Apache (XAMPP)
-
----
-
-## 📖 Implementation Guide
-
-### Phase 1: Database ✅ DONE
-- [x] Design database schema
-- [x] Create sample data
-- [x] Write documentation
-- [x] Create installation scripts
-
-### Phase 2: Dynamic Conversion 🔄 NEXT
-Follow the **IMPLEMENTATION_GUIDE.md** to convert each section:
-
-1. **Categories Section** - Dynamic category loading
-2. **Product Listings** - Database-driven products
-3. **Services** - Dynamic service display
-4. **Lost & Found** - Real-time lost items
-5. **Free Items** - Donation listings
-6. **Sponsored Content** - Ad management
-
-### Phase 3: New Pages 📄 TODO
-- [ ] `products.php` - All products with filters
-- [ ] `product.php` - Single product detail
-- [ ] `services.php` - All services listing
-- [ ] `service.php` - Service detail page
-- [ ] `search.php` - Search results
-- [ ] `profile.php` - User profile
-- [ ] `chat.php` - Messaging interface
-- [ ] `admin/` - Admin dashboard
-
-### Phase 4: Features 🎯 TODO
-- [ ] User authentication (login/register)
-- [ ] File upload for images
-- [ ] Email notifications
-- [ ] Payment integration
-- [ ] Advanced search
-- [ ] Mobile responsive design
-
----
-
-## 🎯 Getting Started
-
-### Step 1: Install Database
-```bash
-# Run the installer
-install-database.bat
-
-# OR manually
-mysql -u root -p < database/install.sql
+```
+/auth
+/products
+/categories
+/user
+/bookmarks
+/cart
+/orders
+/services
+/service-categories
+/reviews
+/notifications
+/chats
+/search
+/users
 ```
 
-### Step 2: Verify Installation
-Open: http://localhost/campmartv2/test-database.php
+The exact method, authentication requirement, parameters, and response structure are defined by the implementation in:
 
-You should see:
-- ✅ Database connection successful
-- ✅ All 21 tables created
-- ✅ Sample data loaded
-- ✅ 16 users, 12 products, etc.
-
-### Step 3: Read the Guides
-1. **DATABASE_SUMMARY.md** - Overview and quick start
-2. **IMPLEMENTATION_GUIDE.md** - Detailed conversion guide
-3. **database/README.md** - Complete database docs
-
-### Step 4: Start Building
-Follow the IMPLEMENTATION_GUIDE.md to convert static sections to dynamic!
-
----
-
-## 💡 Quick Tips
-
-### Using the Sample Queries
-```php
-// Example: Get featured products
-$query = "SELECT p.*, u.username, pi.image_url
-          FROM products p
-          JOIN users u ON p.user_id = u.id
-          LEFT JOIN product_images pi ON p.id = pi.product_id 
-          WHERE p.is_featured = TRUE AND p.status = 'approved'
-          LIMIT 10";
-$result = $db->query($query);
+```
+api/v1/index.php
+api/v1/controllers/
+api/v1/docs/openapi.json
 ```
 
-Check `database/query_examples.sql` for 100+ more queries!
+Use those files as the source of truth rather than copying an endpoint description from this README.
 
-### Security Best Practice
-```php
-// Always use prepared statements
-$stmt = $db->prepare("SELECT * FROM products WHERE id = ?");
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$result = $stmt->get_result();
+---
+
+## Database and Architecture Notes
+
+There are intentionally multiple generations of code in the repository.
+
+For example:
+
+- The web application uses shared procedural helpers.
+- The v1 API uses controller/middleware/helper organization.
+- Legacy procedural API endpoints remain in `api/`.
+- AI functionality has its own module structure.
+- Feature migrations have accumulated as the application has grown.
+
+This is expected in the current repository.
+
+**Do not treat older code as automatically disposable.** Determine what is currently used before replacing or removing it.
+
+---
+
+## Documentation Files
+
+Other documentation in the repository includes:
+
+- `CLEAN_URL_GUIDE.md`
+- `EMAIL_VERIFICATION.md`
+- `api/v1/docs/openapi.json`
+- `api/v1/docs/index.html`
+- `.github/copilot-instructions.md`
+
+When functionality changes, update the relevant documentation instead of allowing it to become stale.
+
+---
+
+## Troubleshooting
+
+### Database connection error
+
+Check:
+
+```
+includes/constant.php
 ```
 
-### Caching for Performance
-```php
-// Cache popular queries
-$cache_file = 'cache/products.json';
-if (file_exists($cache_file) && (time() - filemtime($cache_file) < 300)) {
-    $products = json_decode(file_get_contents($cache_file), true);
-} else {
-    $products = // ... run query
-    file_put_contents($cache_file, json_encode($products));
-}
+Verify:
+
+- MySQL/MariaDB is running.
+- Database name matches `DB_NAME`.
+- Username/password are correct.
+- The required tables exist.
+
+The current repository configuration uses:
+
+```
+campmartv2
 ```
 
----
+### Unknown database/unknown column errors
 
-## 🔍 Testing Checklist
+Do not immediately change the PHP query.
 
-- [ ] Database installed successfully
-- [ ] test-database.php shows all green
-- [ ] All 21 tables exist
-- [ ] Sample data visible
-- [ ] index.php loads without errors
-- [ ] Images display correctly
-- [ ] Database credentials configured
+First:
 
----
+1. Check the SQL schema.
+2. Check migrations.
+3. Search for all references to the table/column.
+4. Determine whether the local database is behind the repository schema.
+5. Apply the appropriate migration or make the smallest compatible code change.
 
-## 📈 Roadmap
+### API errors
 
-### Version 2.1 (Current Phase)
-- [x] Database structure complete
-- [x] Sample data loaded
-- [ ] Dynamic product listings
-- [ ] User authentication
-- [ ] Basic search functionality
+Check:
 
-### Version 2.2 (Next)
-- [ ] Admin panel
-- [ ] Messaging system
-- [ ] Image upload
-- [ ] Email notifications
-
-### Version 3.0 (Future)
-- [ ] Payment integration
-- [ ] Mobile app API
-- [ ] Advanced analytics
-- [ ] Push notifications
-- [ ] Multi-language support
-
----
-
-## 🤝 Contributing
-
-This is a student marketplace project. Feel free to:
-1. Fork the repository
-2. Add new features
-3. Fix bugs
-4. Improve documentation
-5. Share feedback
-
----
-
-## ⚠️ Important Notes
-
-### Security
-- Change default admin password immediately
-- Use prepared statements for all queries
-- Validate and sanitize all user inputs
-- Enable HTTPS in production
-- Set proper file upload restrictions
-
-### Performance
-- All necessary indexes are included
-- Use caching for frequent queries
-- Implement pagination for large datasets
-- Optimize images before uploading
-- Consider CDN for static assets
-
-### Backup
-- Regularly backup your database
-- Keep backups in multiple locations
-- Test backup restoration periodically
-
----
-
-## 🐛 Troubleshooting
-
-### Database Connection Failed?
-```php
-// Check includes/constant.php
-define("DB_SERVER", "localhost");
-define("DB_USER", "root");
-define("DB_PASS", "");
-define("DB_NAME", "campmartv2");
+```
+api/v1/index.php
+api/v1/config/
+api/v1/middleware/
+api/v1/controllers/
 ```
 
-### Tables Not Found?
-```bash
-# Reimport the database
-mysql -u root -p < database/install.sql
+Also check the request method, URL, authentication header, request body, and expected response format.
+
+### AI errors
+
+Check:
+
+```
+.env
+.env.example
+includes/ai/
+api/ai/
 ```
 
-### Slow Queries?
-- Check indexes are created (they are!)
-- Enable query caching
-- Optimize table: `OPTIMIZE TABLE products;`
-
-### Images Not Loading?
-- Check file paths are correct
-- Verify image URLs in database
-- Check Apache permissions
+Verify that AI is enabled and the required provider credentials/configuration are available.
 
 ---
 
-## 📞 Support
+## Current Repository Status
 
-Need help?
-1. Check **IMPLEMENTATION_GUIDE.md** for detailed steps
-2. Review **database/README.md** for database info
-3. See **database/query_examples.sql** for query help
-4. Test at http://localhost/campmartv2/test-database.php
+This repository is an actively developed CampMart V2 codebase rather than the earlier database-only prototype described by the old README.
 
----
+The codebase already contains substantial marketplace, community, admin, API, AI, payment, rider, affiliate, and account functionality.
 
-## 📄 License
-
-This project is for educational purposes. Feel free to use and modify for your campus marketplace needs.
+Therefore, feature requests should normally be implemented by **extending and connecting existing functionality**, not by rebuilding the feature from scratch.
 
 ---
 
-## 🎉 Ready to Build!
+## License / Project Use
 
-Your CampMart marketplace is now ready with:
-- ✅ Complete database structure
-- ✅ Sample data matching your page
-- ✅ Comprehensive documentation
-- ✅ Implementation guides
-- ✅ 100+ query examples
-- ✅ Security features
-- ✅ Admin capabilities
-
-**Start converting your static page to dynamic now!**
-
-Follow **IMPLEMENTATION_GUIDE.md** step by step.
+Refer to the repository's current project ownership and distribution requirements before redistributing or deploying the application.
 
 ---
 
-**Made with ❤️ for Campus Communities**
+## Maintainer Guidance
 
-*Version 2.0 | January 13, 2026*
+When working on CampMart V2:
+
+> **Inspect the actual code. Search before creating. Reuse before duplicating. Check the database before changing queries. Keep changes focused. Verify references after every change.**
+
+For AI-assisted development, read:
+
+```
+.github/copilot-instructions.md
+```
+
+before making substantial changes.
+
+---
+
+**CampMart V2 — Your Campus. Your Marketplace.**
