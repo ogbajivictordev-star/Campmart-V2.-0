@@ -5,7 +5,7 @@ require_once '../includes/constant.php';
 header('Content-Type: application/json');
 
 // Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['userAppId'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
@@ -25,7 +25,7 @@ if (!$product_id || !$payment_method || !$delivery_location || !$phone) {
 }
 
 // Check if buyer's account is blocked
-$buyer_check = $db->query("SELECT status FROM users WHERE id = " . intval($_SESSION['user_id']));
+$buyer_check = $db->query("SELECT status FROM users WHERE id = " . intval($_SESSION['userAppId']));
 $buyer = $buyer_check->fetch_assoc();
 if ($buyer && in_array($buyer['status'], ['suspended', 'banned'])) {
     echo json_encode(['success' => false, 'message' => 'Your account has been suspended or banned. You cannot perform this action.']);
@@ -45,7 +45,7 @@ if (!$product) {
 }
 
 // Check if buyer is not the seller
-if ($product['user_id'] == $_SESSION['user_id']) {
+if ($product['user_id'] == $_SESSION['userAppId']) {
     echo json_encode(['success' => false, 'message' => 'You cannot buy your own product']);
     exit;
 }
