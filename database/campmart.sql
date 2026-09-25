@@ -853,6 +853,21 @@ INSERT INTO `system_settings` (`id`, `setting_key`, `setting_value`, `setting_ty
 (8, 'support_email', 'support@campmart.ng', 'string', 'Support email address', 1, NULL, '2026-01-13 12:41:39', '2026-01-13 12:41:39'),
 (9, 'support_phone', '08012345678', 'string', 'Support phone number', 1, NULL, '2026-01-13 12:41:39', '2026-01-13 12:41:39');
 
+-- Canonical admin feature-toggle defaults
+INSERT INTO system_settings (setting_key, setting_value, setting_type, description, is_public, updated_by)
+VALUES
+('maintenance_mode', '0', 'boolean', 'Enable maintenance mode', 0, NULL),
+('allow_signups', '1', 'boolean', 'Allow new user signups', 0, NULL),
+('require_verification', '1', 'boolean', 'Require verification before creating posts', 0, NULL),
+('enable_chat', '1', 'boolean', 'Enable buyer-seller chat', 0, NULL),
+('auto_approve_listings', '0', 'boolean', 'Auto-approve posts without admin review', 0, NULL),
+('email_notifications', '1', 'boolean', 'Send email notifications for orders and inquiries', 0, NULL),
+('allow_guest_browsing', '1', 'boolean', 'Allow visitors to browse the marketplace', 0, NULL),
+('enable_wishlist', '1', 'boolean', 'Enable Saved for later', 0, NULL),
+('payment_option_paystack', '0', 'boolean', 'Enable Paystack online payments', 0, NULL),
+('payment_option_flutterwave', '0', 'boolean', 'Enable Flutterwave online payments', 0, NULL),
+('payment_option_pod', '1', 'boolean', 'Enable Pay on Delivery', 0, NULL);
+
 -- --------------------------------------------------------
 
 --
