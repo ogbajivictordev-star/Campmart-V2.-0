@@ -9,7 +9,7 @@ class ServiceController {
         $perPage = $pagination['per_page'];
         $offset = $pagination['offset'];
 
-        $whereConditions = ["s.status = 'active'"];
+        $whereConditions = ["s.status = 'approved'"];
         $params = [];
         $types = '';
 
@@ -169,6 +169,16 @@ class ServiceController {
         }
 
         $userId = $GLOBALS['api_user']['id'];
+
+        $userStmt = $db->prepare("SELECT is_verified, role FROM users WHERE id = ?");
+        $userStmt->bind_param("i", $userId);
+        $userStmt->execute();
+        $userData = $userStmt->get_result()->fetch_assoc();
+        $userStmt->close();
+
+        if (isVerificationRequired() && (int)($userData['is_verified'] ?? 0) !== 1 && !in_array($userData['role'] ?? '', ['admin', 'superadmin'], true)) {
+            errorResponse('Your account must be verified before you can create posts.', 403);
+        }
 
         $title = sanitizeInput($data['title']);
         $slug = strtolower(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)) . '-' . time();
