@@ -4,6 +4,17 @@ require_once('../includes/constant.php');
 
 header('Content-Type: application/json');
 
+$signupSetting = $db->query("SELECT setting_value FROM system_settings WHERE setting_key = 'allow_signups' LIMIT 1");
+$allowSignups = true;
+if ($signupSetting && ($row = $signupSetting->fetch_assoc())) {
+    $allowSignups = $row['setting_value'] === '1';
+}
+if (!$allowSignups) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'New account registration is currently disabled by the administrator.']);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
