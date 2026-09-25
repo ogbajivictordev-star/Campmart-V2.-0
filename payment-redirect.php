@@ -44,6 +44,20 @@ if (!$order) {
 
 $callbackUrl = SITE_URL . 'payment-callback.php';
 
+if ($gateway === 'paystack' && !isPaymentOptionEnabled('paystack')) {
+    $_SESSION['error'] = 'Paystack payments are currently disabled by the administrator.';
+    unset($_SESSION['pending_payment_order_ids'], $_SESSION['pending_payment_gateway']);
+    header('Location: my-orders.php');
+    exit;
+}
+
+if ($gateway === 'flutterwave' && !isPaymentOptionEnabled('flutterwave')) {
+    $_SESSION['error'] = 'Flutterwave payments are currently disabled by the administrator.';
+    unset($_SESSION['pending_payment_order_ids'], $_SESSION['pending_payment_gateway']);
+    header('Location: my-orders.php');
+    exit;
+}
+
 if ($gateway === 'paystack') {
     $result = initiatePaystackPayment($order, $callbackUrl);
 } elseif ($gateway === 'flutterwave') {
