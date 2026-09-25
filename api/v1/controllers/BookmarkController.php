@@ -4,6 +4,10 @@ class BookmarkController {
     public static function toggle() {
         global $db;
 
+        if (!isWishlistEnabled()) {
+            errorResponse('Saved for later is currently disabled by the administrator.', 403);
+        }
+
         $userId = $GLOBALS['api_user']['id'];
         $data = getJsonInput();
 
