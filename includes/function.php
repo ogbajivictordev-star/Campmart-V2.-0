@@ -874,6 +874,46 @@ function updateSetting($key, $value) {
 }
 
 /**
+ * Central feature-toggle helpers.
+ * All runtime checks must use these helpers so admin settings are authoritative.
+ */
+function isSettingEnabled($key, $default = false) {
+    return getSetting($key, $default ? '1' : '0') === '1';
+}
+
+function isMaintenanceMode() {
+    return isSettingEnabled('maintenance_mode', false);
+}
+
+function areSignupsAllowed() {
+    return isSettingEnabled('allow_signups', true);
+}
+
+function isVerificationRequired() {
+    return isSettingEnabled('require_verification', true);
+}
+
+function isChatEnabled() {
+    return isSettingEnabled('enable_chat', true);
+}
+
+function isAutoApproveListingsEnabled() {
+    return isSettingEnabled('auto_approve_listings', false);
+}
+
+function areEmailNotificationsEnabled() {
+    return isSettingEnabled('email_notifications', true);
+}
+
+function isGuestBrowsingAllowed() {
+    return isSettingEnabled('allow_guest_browsing', true);
+}
+
+function isWishlistEnabled() {
+    return isSettingEnabled('enable_wishlist', true);
+}
+
+/**
  * Calculate payment amount based on plan and frequency
  */
 function calculatePaymentAmount($totalAmount, $paymentPlan, $paymentFrequency = 'monthly') {
