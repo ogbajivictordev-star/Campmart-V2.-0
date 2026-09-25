@@ -185,6 +185,7 @@ class ServiceController {
 
         $serviceId = dbInsert('services', [
             'user_id' => $userId,
+            'university_id' => $userData['university_id'] ?? null,
             'service_category_id' => (int) $data['service_category_id'],
             'title' => $title,
             'slug' => $slug,
@@ -195,6 +196,7 @@ class ServiceController {
             'delivery_time' => sanitizeInput($data['delivery_time'] ?? ''),
             'portfolio_images' => !empty($data['portfolio_images']) ? json_encode($data['portfolio_images']) : null,
             'skills' => !empty($data['skills']) ? json_encode($data['skills']) : null,
+            'status' => isAutoApproveListingsEnabled() ? 'approved' : 'pending',
         ]);
 
         if (!$serviceId) {
