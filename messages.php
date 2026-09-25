@@ -1,6 +1,12 @@
 <?php session_start();
 include_once 'includes/controller.php';
 
+if (!isChatEnabled()) {
+    http_response_code(403);
+    echo '<!doctype html><html><head><meta charset="utf-8"><title>Chat Disabled</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px"><h1>Chat is currently disabled</h1><p>Buyer-seller chat has been disabled by the administrator.</p></body></html>';
+    exit;
+}
+
 $userId = $_SESSION['userAppId'] ?? 0;
 
 // Get conversation ID from URL
