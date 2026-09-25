@@ -6,6 +6,10 @@ class AuthController {
     public static function signup() {
         global $db;
 
+        if (!areSignupsAllowed()) {
+            errorResponse('New account registration is currently disabled by the administrator.', 403);
+        }
+
         $data = getJsonInput();
 
         $errors = validateRequired($data, ['firstname', 'lastname', 'email', 'phone', 'password']);
