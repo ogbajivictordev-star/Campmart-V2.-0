@@ -170,7 +170,7 @@ class ServiceController {
 
         $userId = $GLOBALS['api_user']['id'];
 
-        $userStmt = $db->prepare("SELECT is_verified, role FROM users WHERE id = ?");
+        $userStmt = $db->prepare("SELECT university_id, is_verified, role FROM users WHERE id = ?");
         $userStmt->bind_param("i", $userId);
         $userStmt->execute();
         $userData = $userStmt->get_result()->fetch_assoc();
