@@ -2,6 +2,11 @@
 session_start();
 require_once 'includes/controller.php';
 
+if (!isChatEnabled()) {
+    header('Location: ' . SITE_URL . 'messages.php?chat_disabled=1');
+    exit;
+}
+
 // Must be logged in
 if (!isset($_SESSION['userAppId'])) {
     header('Location: ' . SITE_URL . 'login.php');
