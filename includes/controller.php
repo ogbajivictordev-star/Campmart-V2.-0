@@ -201,6 +201,11 @@ function accountBalance($userId){
 }
 
     function SignupUser(){
+        if (!areSignupsAllowed()) {
+            $_SESSION['error'] = 'New account registration is currently disabled by the administrator.';
+            return;
+        }
+
         if(empty($_POST['email']) || empty($_POST['firstName']) || empty($_POST['lastName']) || 
            empty($_POST['password']) || empty($_POST['phone'])){
             $_SESSION['error'] = 'All fields are required';
@@ -635,6 +640,11 @@ function startCOnversation($otherUserId){
 
     function SendMessage(){
         checkLogin();
+
+        if (!isChatEnabled()) {
+            $_SESSION['error'] = 'Buyer-seller chat is currently disabled by the administrator.';
+            return;
+        }
         
         if(!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])){
             $_SESSION['error'] = 'Invalid security token';
@@ -710,11 +720,16 @@ function startCOnversation($otherUserId){
         extract($_POST);
         $userId = $this->userId();
         
-        // Get user's university_id
-        $user_query = $db->query("SELECT university_id FROM users WHERE id = $userId");
+        // Get user's university_id and verification state
+        $user_query = $db->query("SELECT university_id, is_verified, role FROM users WHERE id = $userId");
         $user_data = $user_query->fetch_assoc();
         $university_id = $user_data['university_id'] ?? null;
-        
+
+        if (isVerificationRequired() && (int)($user_data['is_verified'] ?? 0) !== 1 && !in_array($user_data['role'] ?? '', ['admin', 'superadmin'], true)) {
+            $_SESSION['error'] = 'Your account must be verified before you can create posts.';
+            return;
+        }
+
         // Create slug from title
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
         $slug = $slug . '-' . time();
@@ -734,8 +749,8 @@ function startCOnversation($otherUserId){
             'slug' => $slug,
             'description' => sanitize($description),
             'price' => floatval($price),
-            'original_price' => !empty($original_price) ? floatval($original_price) : null,
-            'condition_type' => sanitize($condition_type ?? 'good'),
+            'condition_type' => sanitize($condition_type ?? 'new'),
+            'status' => isAutoApproveListingsEnabled() ? 'approved' : 'pending',
             // 'location' => sanitize($location),
             'negotiable' => $negotiable,
             'availability' => $availableQuantity > 0 ? 'available' : 'sold',
@@ -846,9 +861,14 @@ function startCOnversation($otherUserId){
         $userId = $this->userId();
         
         // Get user's university_id
-        $user_query = $db->query("SELECT university_id FROM users WHERE id = $userId");
+        $user_query = $db->query("SELECT university_id, is_verified, role FROM users WHERE id = $userId");
         $user_data = $user_query->fetch_assoc();
         $university_id = $user_data['university_id'] ?? null;
+
+        if (isVerificationRequired() && (int)($user_data['is_verified'] ?? 0) !== 1 && !in_array($user_data['role'] ?? '', ['admin', 'superadmin'], true)) {
+            $_SESSION['error'] = 'Your account must be verified before you can create posts.';
+            return;
+        }
         
         // Create slug from title
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
@@ -926,7 +946,7 @@ function startCOnversation($otherUserId){
             'delivery_time' => sanitize($delivery_time ?? ''),
             'availability' => 'available',
             'portfolio_images' => !empty($portfolio_images) ? json_encode($portfolio_images) : NULL,
-            'status' => 'active'
+            'status' => isAutoApproveListingsEnabled() ? 'approved' : 'pending'
         ];
         
         $serviceId = dbInsert('services', $serviceData);
@@ -1055,6 +1075,31 @@ if(isLoggedIn()){
     $universityId = $currentUser['university_id'];
     $department = $currentUser['department'];
     $accountStatus = $currentUser['status'] ?? 'active';
+
+    // Enforce global admin toggles for logged-in users.
+    $isAdminUser = in_array($currentUser['role'] ?? '', ['admin', 'superadmin'], true);
+    $scriptName = basename($_SERVER['PHP_SELF'] ?? '');
+
+    if (!$isAdminUser) {
+        if (isMaintenanceMode()) {
+            $maintenanceAllowed = [
+                'login.php', 'signup.php', 'verify-email.php', 'forgot-password.php',
+                'reset-password.php', 'terms-of-service.php', 'privacy-policy.php', 'help-center.php'
+            ];
+            if (!in_array($scriptName, $maintenanceAllowed, true)) {
+                http_response_code(503);
+                echo '<!doctype html><html><head><meta charset="utf-8"><title>CampMart Maintenance</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:80px 20px"><h1>CampMart is temporarily unavailable</h1><p>We are performing maintenance. Please check back shortly.</p></body></html>';
+                exit;
+            }
+        }
+        if (!isGuestBrowsingAllowed() && in_array($scriptName, [
+            'index.php','products.php','product.php','product-profile.php','categories.php',
+            'services.php','service.php','store.php','seller-profile.php'
+        ], true)) {
+            header('Location: ' . SITE_URL . 'login.php');
+            exit;
+        }
+    }
 
     // Restrict riders to rider operations only: keep them out of buyer/seller pages.
     if (($currentUser['role'] ?? '') === 'rider') {
