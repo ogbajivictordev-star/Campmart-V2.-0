@@ -8,6 +8,16 @@ if (!isset($_SESSION['userAppId'])) {
     exit;
 }
 
+$wishlistSetting = $db->query("SELECT setting_value FROM system_settings WHERE setting_key = 'enable_wishlist' LIMIT 1");
+$wishlistEnabled = true;
+if ($wishlistSetting && ($row = $wishlistSetting->fetch_assoc())) {
+    $wishlistEnabled = $row['setting_value'] === '1';
+}
+if (!$wishlistEnabled) {
+    echo json_encode(['success' => false, 'message' => 'Saved for later is currently disabled by the administrator.']);
+    exit;
+}
+
 if (isAccountBlocked()) {
     echo json_encode(['success' => false, 'message' => 'Your account has been suspended or banned. You cannot perform this action.']);
     exit;
