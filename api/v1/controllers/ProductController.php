@@ -182,11 +182,15 @@ class ProductController {
 
         $userId = $GLOBALS['api_user']['id'];
 
-        $stmt = $db->prepare("SELECT university_id FROM users WHERE id = ?");
+        $stmt = $db->prepare("SELECT university_id, is_verified, role FROM users WHERE id = ?");
         $stmt->bind_param("i", $userId);
         $stmt->execute();
         $uData = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+
+        if (isVerificationRequired() && (int)($uData['is_verified'] ?? 0) !== 1 && !in_array($uData['role'] ?? '', ['admin', 'superadmin'], true)) {
+            errorResponse('Your account must be verified before you can create posts.', 403);
+        }
 
         $title = sanitizeInput($data['title']);
         $slug = strtolower(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)) . '-' . time();
@@ -209,8 +213,8 @@ class ProductController {
             'slug' => $slug,
             'description' => sanitizeInput($data['description']),
             'price' => (float) $data['price'],
-            'original_price' => !empty($data['original_price']) ? (float) $data['original_price'] : null,
-            'condition_type' => sanitizeInput($data['condition_type'] ?? 'good'),
+            'condition_type' => sanitizeInput($data['condition_type'] ?? 'new'),
+            'status' => isAutoApproveListingsEnabled() ? 'approved' : 'pending',
             'negotiable' => $negotiable,
             'availability' => $availableQuantity > 0 ? 'available' : 'sold',
             'metadata' => $metadata
