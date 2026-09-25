@@ -149,6 +149,10 @@ class MessageController {
     public static function startConversation() {
         global $db;
 
+        if (!isChatEnabled()) {
+            errorResponse('Buyer-seller chat is currently disabled by the administrator.', 403);
+        }
+
         $userId = $GLOBALS['api_user']['id'];
         $data = getJsonInput();
 
@@ -236,6 +240,10 @@ class MessageController {
 
     public static function sendMessage($conversationId) {
         global $db;
+
+        if (!isChatEnabled()) {
+            errorResponse('Buyer-seller chat is currently disabled by the administrator.', 403);
+        }
 
         $convId = (int) $conversationId;
         $userId = $GLOBALS['api_user']['id'];
