@@ -1550,7 +1550,11 @@ function generateAffiliateLink($affiliateCode, $baseUrl = null) {
  * Send email notification
  */
 function sendEmailNotification($to, $subject, $message) {
-    $siteName = getSetting('site_name', 'LandRemit');
+    if (!areEmailNotificationsEnabled()) {
+        return false;
+    }
+
+    $siteName = getSetting('site_name', 'CampMart');
     $siteEmail = getSetting('site_email', 'info@landremit.com');
     
     $headers = "From: $siteName <$siteEmail>\r\n";
